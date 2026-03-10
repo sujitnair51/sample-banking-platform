@@ -1,0 +1,7 @@
+<packaging>pom</packaging>
+
+<modules>
+    <module>common-events</module>
+    <module>onboarding-service</module>
+    <module>documentation-service</module>
+</modules>

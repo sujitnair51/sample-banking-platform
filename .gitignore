@@ -1,0 +1,71 @@
+# IDE Settings
+.idea/
+*.iws
+*.iml
+*.ipr
+.eclipse/
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# Build Artifacts
+target/
+build/
+out/
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.gradletasknamecache
+
+# Project specific files and directories
+bin/
+.recommenders/
+/code
+MANIFEST.MF
+_site/
+activemq-data
+dependency-reduced-pom.xml
+dump.rdb
+interpolated*.xml
+lib/
+manifest.yml
+secrets.yml
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+
+# Log files
+*.log
+logs/
+hs_err_pid*
+
+# sample pdf file 
+uploads/
+
+# Environment and Temporary Files
+.env
+application*.properties.local
+*.swp
+*~
+.#*
+.DS_Store
+Thumbs.db
+Desktop.ini
+node_modules/
+
+# VS Code
+.vscode/

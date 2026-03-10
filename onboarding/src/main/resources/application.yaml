@@ -1,0 +1,25 @@
+spring:
+  port: 8081
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: onboarding-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      properties:
+#        spring.json.trusted.packages: "*"
+#        spring.json.value.default.type: com.snbnk.onboarding.event.DocumentUploadedEvent
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
