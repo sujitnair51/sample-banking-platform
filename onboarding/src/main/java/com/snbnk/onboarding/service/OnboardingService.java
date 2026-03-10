@@ -6,13 +6,11 @@ import com.snbnk.onboarding.domain.RequiredDocuments;
 import com.snbnk.onboarding.domain.Status;
 import com.snbnk.onboarding.error.ConflictException;
 import com.snbnk.onboarding.event.DocumentUploadedEvent;
-import com.snbnk.onboarding.persistence.ApplicationEntity;
-import com.snbnk.onboarding.persistence.ApplicationRepository;
-import com.snbnk.onboarding.persistence.UploadedDocumentEntity;
-import com.snbnk.onboarding.persistence.UploadedDocumentRepository;
+import com.snbnk.onboarding.persistence.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +24,7 @@ public class OnboardingService {
 
     private final ApplicationRepository repository;
     private final UploadedDocumentRepository uploadedDocumentRepository;
+    private final ProcessedEventRepository processedEventRepository;
 
     public ApplicationResponse create(CreateApplicationRequest req) {
         if(repository.existsByEmail(req.email())){
@@ -112,6 +111,19 @@ public class OnboardingService {
 
     @Transactional
     public void handleDocumentUploaded(DocumentUploadedEvent event) {
+
+        try{
+//          The database becomes the source of truth for idempotency.
+//          insert first and let the database guarantee uniqueness.
+            processedEventRepository.save(
+                    ProcessedEventEntity.create(event.eventId())
+            );
+        } catch(DataIntegrityViolationException exception) {
+            log.info("Duplicate event detected: {}", event.eventId());
+            return;
+        }
+
+//        process event only if insert succeeded
         uploadedDocumentRepository.save(
                 UploadedDocumentEntity.create(
                         event.applicationId().toString(),

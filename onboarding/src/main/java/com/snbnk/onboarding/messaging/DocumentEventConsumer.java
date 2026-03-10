@@ -2,7 +2,6 @@ package com.snbnk.onboarding.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snbnk.onboarding.event.DocumentUploadedEvent;
-import com.snbnk.onboarding.persistence.ProcessedEventEntity;
 import com.snbnk.onboarding.persistence.ProcessedEventRepository;
 import com.snbnk.onboarding.service.OnboardingService;
 import lombok.RequiredArgsConstructor;
@@ -29,16 +28,7 @@ public class DocumentEventConsumer {
 
             log.info("Received document upload event: {}", event);
 
-            // IDEMPOTENCY CHECK
-            if (processedEventRepository.existsByEventId(event.eventId())) {
-
-                log.info("Event already processed: {}", event.eventId());
-                return;
-            }
-
             onboardingService.handleDocumentUploaded(event);
-
-            processedEventRepository.save(ProcessedEventEntity.create(event.eventId()));
 
         } catch (Exception e) {
             log.error("Failed to process document event: {}", message, e);
