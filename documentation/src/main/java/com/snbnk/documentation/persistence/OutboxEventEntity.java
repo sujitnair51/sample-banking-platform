@@ -3,6 +3,7 @@ package com.snbnk.documentation.persistence;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "outbox_events")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OutboxEventEntity {
 
     @Id
@@ -32,6 +33,13 @@ public class OutboxEventEntity {
 
     private boolean published;
 
+    private int attempts;
+
+    private String lastError;
+
+    private Instant publishedAt;
+
+
     public static OutboxEventEntity create(String aggregateType,
                                        String aggregateId,
                                        String eventType,
@@ -45,11 +53,19 @@ public class OutboxEventEntity {
         e.payload = payload;
         e.createdAt = Instant.now();
         e.published = false;
+        e.attempts = 0;
 
         return e;
     }
 
     public void markPublished() {
         this.published = true;
+        this.publishedAt = Instant.now();
+        this.lastError = null;
+    }
+
+    public void markFailed(String error) {
+        this.attempts++;
+        this.lastError = error;
     }
 }
