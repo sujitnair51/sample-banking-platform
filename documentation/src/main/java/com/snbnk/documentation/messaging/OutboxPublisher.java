@@ -17,6 +17,7 @@ import java.util.List;
 public class OutboxPublisher {
 
     private static final String DOCUMENT_UPLOADED_TOPIC = "document-uploaded";
+    private static final int MAX_RETRY = 5;
 
     private final OutboxEventRepository repository;
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -25,7 +26,7 @@ public class OutboxPublisher {
     @Scheduled(fixedDelay = 5000)
     public void publishUnpublishedEvents() {
         List<OutboxEventEntity> events =
-                repository.findTop20ByPublishedFalseOrderByCreatedAtAsc();
+                repository.findTop20ByPublishedFalseAndDeadLetterFalseOrderByCreatedAtAsc();
 
         if (events.isEmpty()) {
             return;
@@ -48,10 +49,28 @@ public class OutboxPublisher {
 
             } catch (Exception ex) {
                 String error = truncate(ex.getMessage(), 1000);
-                event.markFailed(error);
 
-                log.error("Failed to publish outbox event id={} type={} attempts={}",
-                        event.getId(), event.getEventType(), event.getAttempts(), ex);
+                if(event.getAttempts() >= MAX_RETRY) {
+                    event.markDeadLetter(error);
+
+                    log.error(
+                            "OUTBOX EVENT MOVED TO DEAD LETTER id={} type={} attempts={} error={}",
+                            event.getId(),
+                            event.getEventType(),
+                            event.getAttempts(),
+                            error
+                    );
+                } else {
+                    event.markFailed(error);
+
+                    log.warn(
+                            "Failed to publish outbox event id={} type={} attempts={} error={}",
+                            event.getId(),
+                            event.getEventType(),
+                            event.getAttempts(),
+                            error);
+                }
+
             }
         }
     }
