@@ -39,6 +39,8 @@ public class OutboxEventEntity {
 
     private Instant publishedAt;
 
+    private boolean deadLetter;
+
 
     public static OutboxEventEntity create(String aggregateType,
                                        String aggregateId,
@@ -66,6 +68,11 @@ public class OutboxEventEntity {
 
     public void markFailed(String error) {
         this.attempts++;
+        this.lastError = error;
+    }
+
+    public void markDeadLetter(String error) {
+        this.deadLetter = true;
         this.lastError = error;
     }
 }
